@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>TC55 | Mathematical Chaos Lab</title>
+<style>
+:root{--bg:#080b16;--panel:#131a2e;--purple:#a78bfa;--cyan:#67e8f9;--text:#eef2ff;--muted:#a4acc5}
+*{box-sizing:border-box}
+body{margin:0;background:radial-gradient(ellipse at top,#24204d,var(--bg) 65%);color:var(--text);font-family:system-ui,sans-serif;min-height:100vh}
+header{padding:18px 15px;border-bottom:1px solid #343956;display:flex;justify-content:space-between;align-items:center;gap:8px}
+.brand{font-weight:900;letter-spacing:1px}.brand span{color:var(--cyan)}
+header small{color:var(--muted)}
+main{max-width:1000px;margin:auto;padding:22px 13px 60px}
+h1{font-size:clamp(32px,8vw,55px);line-height:1.1;margin:18px 0}
+h2{font-size:25px;margin-top:0}
+p{color:var(--muted);line-height:1.6}
+.panel{background:#131a2eeb;border:1px solid #343956;border-radius:18px;padding:19px;margin:17px 0;box-shadow:0 12px 40px #0003}
+input,button,select{font:inherit;border-radius:10px;padding:12px}
+input,select{width:100%;background:#080d1b;border:1px solid #454c70;color:white;margin:7px 0}
+button{background:linear-gradient(110deg,#8b5cf6,#6366f1);color:white;font-weight:700;border:0;cursor:pointer;margin:4px 3px 4px 0}
+button.secondary{background:#252d46}
+button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--cyan);outline-offset:2px}
+.status{min-height:25px;color:var(--cyan);overflow-wrap:anywhere}
+.hidden{display:none!important}
+.tag{display:inline-block;padding:5px 10px;border:1px solid #51468b;border-radius:30px;color:var(--purple);font-size:12px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,220px),1fr));gap:12px}
+.formula{background:#0b1020;border:1px solid #303957;border-radius:13px;padding:14px}
+.formula h3{margin:4px 0 10px}
+.equation{color:var(--cyan);font-family:monospace;overflow-wrap:anywhere;font-size:15px}
+#digits{font-family:monospace;line-height:1.9;overflow-wrap:anywhere;word-break:break-word;color:#c4b5fd;max-height:330px;overflow-y:auto;background:#080d1b;padding:12px;border-radius:10px}
+canvas{width:100%;height:270px;background:#080d1b;border-radius:12px;border:1px solid #303957;display:block}
+footer{text-align:center;color:#737d9c;padding:20px;font-size:12px}
+.check{color:#a5f3fc;font-size:14px}
+a{color:var(--cyan)}
+</style>
+</head>
+<body>
+<header>
+  <div class="brand">TC55 <span>CHAOS LAB</span></div>
+  <small>v1.0 · Math division</small>
+</header>
+
+<main>
+<section id="gate" class="panel">
+  <span class="tag">ACCESS TERMINAL</span>
+  <h1>Enter the<br><span style="color:var(--cyan)">Mathverse.</span></h1>
+  <p>Choose a password meeting the strength rules to unlock the lab.</p>
+  <label for="password">Your password</label>
+  <input id="password" type="password" placeholder="16+ characters recommended" autocomplete="off">
+  <div class="check" id="checks">
+    ○ 16 or more characters<br>
+    ○ Uppercase letter (A–Z)<br>
+    ○ Lowercase letter (a–z)<br>
+    ○ Number (0–9)<br>
+    ○ Special symbol (!@#$ etc.)
+  </div>
+  <p id="strength" class="status">Waiting for password…</p>
+  <button id="unlock">Unlock the Lab →</button>
+  <p style="font-size:12px">Demo gate only: this checks password format, not whether a password is actually secret or safe. It does not save or transmit your password.</p>
+</section>
+
+<div id="lab" class="hidden">
+  <section class="panel">
+    <span class="tag">ACCESS GRANTED</span>
+    <h1>Welcome to<br><span style="color:var(--purple)">Infinity.</span></h1>
+    <p>Explore irrational numbers, mathematical curves, and chaotic systems.</p>
+    <button onclick="showSection('pi')">π Pi Explorer</button>
+    <button onclick="showSection('graphs')">Top 10 Graphs</button>
+    <button class="secondary" onclick="lockLab()">Lock Lab</button>
+  </section>
+
+  <section id="pi" class="panel hidden">
+    <h2>π Pi Explorer</h2>
+    <p>Calculate π to 2,000 digits after the decimal point using the Chudnovsky series and JavaScript BigInt arithmetic.</p>
+    <button id="calculatePi">Calculate 2,000 digits</button>
+    <button id="copyPi" class="secondary" disabled>Copy digits</button>
+    <p id="piStatus" class="status">Ready to calculate.</p>
+    <div id="digits">Press Calculate to generate the digits of π.</div>
+    <p style="font-size:12px">The calculation may take a little while on older phones. Keep this page open while it runs.</p>
+  </section>
+
+  <section id="graphs" class="panel hidden">
+    <h2>Top 10 Mathematical Graphs</h2>
+    <p>Select a formula to explore its shape. Use the range control to zoom in or out.</p>
+    <label for="formulaSelect">Choose an equation</label>
+    <select id="formulaSelect"></select>
+    <div class="formula">
+      <h3 id="formulaTitle">Parabola</h3>
+      <div class="equation" id="equation"></div>
+      <p id="description"></p>
+    </div>
+    <label for="range">Graph range: ±<span id="rangeValue">10</span></label>
+    <input id="range" type="range" min="2" max="30" value="10">
+    <button id="drawGraph">Draw / Refresh Graph</button>
+    <canvas id="graph" width="800" height="500"></canvas>
+    <p id="graphStatus" class="status">Choose a formula to begin.</p>
+    <p style="font-size:12px">Some functions have discontinuities or values outside the visible range. The graph skips those points.</p>
+  </section>
+</div>
+</main>
+<footer>TC55 MATHEMATICAL CHAOS LAB · Built with HTML, CSS & JavaScript</footer>
+
+<script>
+"use strict";
+
+// PASSWORD GATE
+const passwordInput = document.getElementById("password");
+const strength = document.getElementById("strength");
+const rules = [
+  p => p.length >= 16,
+  p => /[A-Z]/.test(p),
+  p => /[a-z]/.test(p),
+  p => /[0-9]/.test(p),
+  p => /[^A-Za-z0-9]/.test(p)
+];
+
+function updatePassword() {
+  const p = passwordInput.value;
+  const passed = rules.map(rule => rule(p));
+  document.getElementById("checks").innerHTML = [
+    "16 or more characters",
+    "Uppercase letter (A–Z)",
+    "Lowercase letter (a–z)",
+    "Number (0–9)",
+    "Special symbol (!@#$ etc.)"
+  ].map((label, i) =>
+    `<div>${passed[i] ? "✓" : "○"} ${label}</div>`
+  ).join("");
+  const count = passed.filter(Boolean).length;
+  strength.textContent = p ? `Requirements met: ${count}/5` : "Waiting for password…";
+}
+passwordInput.addEventListener("input", updatePassword);
+
+document.getElementById("unlock").addEventListener("click", () => {
+  const p = passwordInput.value;
+  if (!rules.every(rule => rule(p))) {
+    strength.textContent = "INVALID PASSWORD — meet all five requirements.";
+    return;
+  }
+  document.getElementById("gate").classList.add("hidden");
+  document.getElementById("lab").classList.remove("hidden");
+  showSection("pi");
+});
+
+function lockLab() {
+  document.getElementById("lab").classList.add("hidden");
+  document.getElementById("gate").classList.remove("hidden");
+  passwordInput.value = "";
+  updatePassword();
+}
+
+function showSection(id) {
+  ["pi", "graphs"].forEach(name =>
+    document.getElementById(name).classList.toggle("hidden", name !== id)
+  );
+  if (id === "graphs") drawGraph();
+}
+
+// PI CALCULATOR: FIXED-POINT CHUDNOVSKY SERIES
+function bigIntSqrt(n) {
+  if (n < 0n) throw new Error("Square root of a negative number");
+  if (n < 2n) return n;
+  let x = n;
+  let y = (x + 1n) / 2n;
+  while (y < x) {
+    x = y;
+    y = (x + n / x) / 2n;
+  }
+  return x;
+}
+
+function calculatePi(digits) {
+  const guard = 15;
+  const scale = 10n ** BigInt(digits + guard);
+  const sqrt10005 = bigIntSqrt(10005n * scale * scale);
+
+  let M = 1n;
+  let L = 13591409n;
+  let X = 1n;
+  let K = 6n;
+  let sum = L * scale;
+  const terms = Math.ceil(digits / 14.181647462 + 2);
+
+  for (let i = 1; i < terms; i++) {
+    const bi = BigInt(i);
+    M = M * (K * K * K - 16n * K) / (bi * bi * bi);
+    L += 545140134n;
+    X *= -262537412640768000n;
+    sum += M * L * scale / X;
+    K += 12n;
+  }
+
+  const piScaled = (426880n * sqrt10005 * scale) / sum;
+  const rounded = piScaled / (10n ** BigInt(guard));
+  const raw = rounded.toString().padStart(digits + 2, "0");
+  return raw.slice(0, raw.length - digits) + "." +
+         raw.slice(raw.length - digits);
+}
+
+let piText = "";
+const piButton = document.getElementById("calculatePi");
+piButton.addEventListener("click", () => {
+  piButton.disabled = true;
+  document.getElementById("copyPi").disabled = true;
+  document.getElementById("piStatus").textContent = "Calculating…";
+  document.getElementById("digits").textContent = "Working…";
+
+  // Yield to the browser so the status can render first.
+  setTimeout(() => {
+    try {
+      piText = calculatePi(2000);
+      document.getElementById("digits").textContent = piText;
+      document.getElementById("piStatus").textContent =
+        "Complete: 2,000 digits after the decimal point.";
+      document.getElementById("copyPi").disabled = false;
+    } catch (error) {
+      document.getElementById("piStatus").textContent =
+        "Calculation failed: " + error.message;
+      document.getElementById("digits").textContent =
+        "Try again or use a newer browser.";
+    } finally {
+      piButton.disabled = false;
+    }
+  }, 30);
+});
+
+document.getElementById("copyPi").addEventListener("click", async () => {
+  try {
+    await navigator.clipboard.writeText(piText);
+    document.getElementById("piStatus").textContent = "Copied π to clipboard!";
+  } catch {
+    document.getElementById("digits").focus?.();
+    document.getElementById("piStatus").textContent =
+      "Clipboard unavailable in this preview. Select and copy the digits manually.";
+  }
+});
+
+// TOP TEN FORMULAS
+const formulas = [
+  {name:"Parabola", eq:"y = x²", desc:"A quadratic curve, symmetric around the vertical axis.", fn:x=>x*x},
+  {name:"Cubic", eq:"y = x³", desc:"An odd-powered polynomial with an S-shaped curve.", fn:x=>x*x*x},
+  {name:"Sine wave", eq:"y = sin(x)", desc:"A periodic wave used in sound, signals and oscillations.", fn:x=>Math.sin(x)},
+  {name:"Cosine wave", eq:"y = cos(x)", desc:"A periodic wave shifted relative to sine.", fn:x=>Math.cos(x)},
+  {name:"Exponential", eq:"y = eˣ", desc:"Exponential growth; values rise rapidly for positive x.", fn:x=>Math.exp(x)},
+  {name:"Logarithm", eq:"y = ln(x)", desc:"The natural logarithm, defined only for x > 0.", fn:x=>x>0?Math.log(x):NaN},
+  {name:"Reciprocal", eq:"y = 1/x", desc:"A hyperbola with a vertical asymptote at x = 0.", fn:x=>1/x},
+  {name:"Damped wave", eq:"y = e⁻⁰·¹ˣ² cos(4x)", desc:"An oscillation whose amplitude decreases away from zero.", fn:x=>Math.exp(-0.1*x*x)*Math.cos(4*x)},
+  {name:"Absolute value", eq:"y = |x|", desc:"A V-shaped graph showing distance from zero.", fn:x=>Math.abs(x)},
+  {name:"Logistic curve", eq:"y = 1 / (1 + e⁻ˣ)", desc:"An S-shaped curve approaching 0 and 1.", fn:x=>1/(1+Math.exp(-x))}
+];
+
+const select = document.getElementById("formulaSelect");
+formulas.forEach((f,i) => {
+  const option = document.createElement("option");
+  option.value = i;
+  option.textContent = `${i+1}. ${f.name}`;
+  select.appendChild(option);
+});
+
+function drawGraph() {
+  const f = formulas[Number(select.value) || 0];
+  document.getElementById("formulaTitle").textContent = f.name;
+  document.getElementById("equation").textContent = f.eq;
+  document.getElementById("description").textContent = f.desc;
+
+  const canvas = document.getElementById("graph");
+  const ctx = canvas.getContext("2d");
+  const w = canvas.width, h = canvas.height;
+  const range = Number(document.getElementById("range").value);
+  document.getElementById("rangeValue").textContent = range;
+
+  ctx.clearRect(0,0,w,h);
+  ctx.fillStyle = "#080d1b";
+  ctx.fillRect(0,0,w,h);
+
+  const X = x => (x + range) / (2*range) * w;
+  const Y = y => h/2 - y / range * (h/2);
+
+  ctx.strokeStyle = "#27314d";
+  ctx.lineWidth = 1;
+  for (let i=-range; i<=range; i+=Math.max(1,Math.ceil(range/10))) {
+    ctx.beginPath(); ctx.moveTo(X(i),0); ctx.lineTo(X(i),h); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(0,Y(i)); ctx.lineTo(w,Y(i)); ctx.stroke();
+  }
+  ctx.strokeStyle = "#8793b8";
+  ctx.beginPath(); ctx.moveTo(X(-range),Y(0)); ctx.lineTo(X(range),Y(0)); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(X(0),0); ctx.lineTo(X(0),h); ctx.stroke();
+
+  ctx.strokeStyle = "#67e8f9";
+  ctx.lineWidth = 2.5;
+  ctx.beginPath();
+  let drawing = false, lastY = null;
+  for (let px=0; px<w; px++) {
+    const x = (px/w*2-1)*range;
+    let y = f.fn(x);
+    if (!Number.isFinite(y) || Math.abs(y)>range*3) {
+      drawing = false;
+      lastY = null;
+      continue;
+    }
+    const py = Y(y);
+    if (!drawing || (lastY !== null && Math.abs(py-lastY)>h/3)) {
+      ctx.moveTo(px,py);
+    } else {
+      ctx.lineTo(px,py);
+    }
+    drawing = true;
+    lastY = py;
+  }
+  ctx.stroke();
+  document.getElementById("graphStatus").textContent =
+    "Plotted " + f.name + " over x = −" + range + " to " + range + ".";
+}
+select.addEventListener("change", drawGraph);
+document.getElementById("range").addEventListener("input", drawGraph);
+document.getElementById("drawGraph").addEventListener("click", drawGraph);
+</script>
+</body>
+</html>
